@@ -13,35 +13,25 @@ type Props = {
 };
 
 export const TodoFilter: React.FC<Props> = ({ todos, changeTodoList }) => {
-  const [searchValue, setSearchValue] = useState<string>('');
+  const [searchValue, setSearchValue] = useState('');
   const [selectedValue, setSelectedValue] = useState<SelectTodos>(
     SelectTodos.All,
   );
 
-  const changeSelectedValue = (event: React.ChangeEvent<HTMLSelectElement>) => {
-    setSelectedValue(event.target.value as SelectTodos);
-  };
-
-  const changeSearchValue = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(event.target.value);
-  };
-
   useEffect(() => {
-    let filteredTodos = [...todos];
-
-    if (selectedValue === SelectTodos.Active) {
-      filteredTodos = filteredTodos.filter(todo => !todo.completed);
-    }
-
-    if (selectedValue === SelectTodos.Completed) {
-      filteredTodos = filteredTodos.filter(todo => todo.completed);
-    }
-
-    if (searchValue.trim() !== '') {
-      filteredTodos = filteredTodos.filter(todo =>
-        todo.title.toLowerCase().includes(searchValue.toLowerCase()),
+    const filteredTodos = todos
+      .filter(todo =>
+        selectedValue === SelectTodos.Active
+          ? !todo.completed
+          : selectedValue === SelectTodos.Completed
+            ? todo.completed
+            : true,
+      )
+      .filter(todo =>
+        searchValue.trim()
+          ? todo.title.toLowerCase().includes(searchValue.toLowerCase())
+          : true,
       );
-    }
 
     changeTodoList(filteredTodos);
   }, [selectedValue, searchValue, todos, changeTodoList]);
@@ -56,7 +46,9 @@ export const TodoFilter: React.FC<Props> = ({ todos, changeTodoList }) => {
           <select
             data-cy="statusSelect"
             value={selectedValue}
-            onChange={changeSelectedValue}
+            onChange={event =>
+              setSelectedValue(event.target.value as SelectTodos)
+            }
           >
             {Object.entries(SelectTodos).map(([key, value]) => (
               <option key={key} value={value}>
@@ -74,7 +66,7 @@ export const TodoFilter: React.FC<Props> = ({ todos, changeTodoList }) => {
           className="input"
           value={searchValue}
           placeholder="Search..."
-          onChange={changeSearchValue}
+          onChange={event => setSearchValue(event.target.value)}
         />
         <span className="icon is-left">
           <i className="fas fa-magnifying-glass" />
