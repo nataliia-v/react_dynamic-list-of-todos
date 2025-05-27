@@ -7,6 +7,12 @@ enum SelectTodos {
   Completed = 'completed',
 }
 
+const filterStrategies: Record<SelectTodos, (todo: Todo) => boolean> = {
+  [SelectTodos.All]: () => true,
+  [SelectTodos.Active]: (todo) => !todo.completed,
+  [SelectTodos.Completed]: (todo) => todo.completed,
+};
+
 type Props = {
   todos: Todo[];
   changeTodoList: (filteredTodos: Todo[]) => void;
@@ -19,17 +25,13 @@ export const TodoFilter: React.FC<Props> = ({ todos, changeTodoList }) => {
   );
 
   useEffect(() => {
+    const strategy = filterStrategies[selectedValue];
+
     const filteredTodos = todos
-      .filter(todo =>
-        selectedValue === SelectTodos.Active
-          ? !todo.completed
-          : selectedValue === SelectTodos.Completed
-            ? todo.completed
-            : true,
-      )
-      .filter(todo =>
+      .filter(strategy)
+      .filter(({ title }) =>
         searchValue.trim()
-          ? todo.title.toLowerCase().includes(searchValue.toLowerCase())
+          ? title.toLowerCase().includes(searchValue.toLowerCase())
           : true,
       );
 
